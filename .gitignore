@@ -1,0 +1,36 @@
+# === DADOS GENÉTICOS — NUNCA COMMITAR ===
+data/raw/*
+data/interim/*
+data/processed/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# === Segredos ===
+.env
+*.key
+*.pem
+secrets/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# === Jupyter ===
+.ipynb_checkpoints/
+
+# === Saídas grandes / figuras regeneráveis ===
+results/figures/*.png
+results/tables/*.csv
+
+# === Sistema ===
+.DS_Store
+Thumbs.db
+
+# === Docker ===
+.docker/

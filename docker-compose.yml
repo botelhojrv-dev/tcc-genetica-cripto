@@ -1,0 +1,20 @@
+services:
+  jupyter:
+    build: .
+    container_name: tcc-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      # Monta o projeto inteiro (edições refletem dentro do container)
+      - .:/app
+      # Dados brutos somente-leitura: impossível sobrescrever a origem
+      - ./data/raw:/app/data/raw:ro
+    restart: unless-stopped
+
+  python:
+    build: .
+    profiles: ["cli"]        # só sobe com: docker compose run --rm python
+    volumes:
+      - .:/app
+    command: bash
+    
