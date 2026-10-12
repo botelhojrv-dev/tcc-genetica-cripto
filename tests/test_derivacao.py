@@ -56,6 +56,16 @@ class TestDerivarChave:
 
     def test_mesmo_perfil_salt_diferente_chave_diferente(self):
         ...
+        
+    def test_mesmo_perfil_mesmo_salt_mesma_chave(self):
+        """Determinismo: mesma entrada → mesma saída, sempre."""
+        perfil = {"D3S1358": ("16", "17"), "TH01": ("7", "9")}
+        salt = secrets.token_bytes(16)
+
+        chave1 = derivar_chave(perfil, salt)
+        chave2 = derivar_chave(perfil, salt)
+
+        assert chave1 == chave2
 
     def test_salt_diferente_sem_correlacao(self):
         """Média de várias derivações com salts distintos ≈ 128 bits de diferença."""
