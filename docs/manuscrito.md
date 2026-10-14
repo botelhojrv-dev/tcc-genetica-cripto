@@ -29,7 +29,78 @@ validação estatística; reprodutibilidade
 
 ---
 
-## 1. INTRODUÇÃO
+### 1. INTRODUÇÃO
+
+A autenticação biométrica tornou-se onipresente: impressões digitais desbloqueiam
+telefones, o reconhecimento facial autoriza pagamentos e a íris controla
+acessos restritos. Paralelamente, a criptografia moderna exige chaves de
+alto grau de imprevisibilidade — no mínimo 128 bits para os padrões
+contemporâneos (AES-128), com 256 bits recomendados (AES-256). A união
+dessas duas frentes, contudo, esbarra num obstáculo fundamental: dados
+biométricos não são segredos. Ao contrário de uma senha, a característica
+biométrica está permanentemente "exposta ao mundo" — pode ser coletada
+sem consentimento (uma digital em um copo, DNA em saliva residual) e não
+pode ser trocada caso comprometida. Essa assimetria fez surgir um campo
+próprio de pesquisa, a biometria criptográfica, com propostas originais 
+comoFuzzy Vault (JUELS; SUDAN, 2006) e os fuzzy extractors (DODIS; OSTROVSKY; REYZIN; SMITH, 2008).
+
+Dentre as modalidades biométricas, o DNA ocupa posição singular: é o
+identificador humano mais discriminante conhecido, inalterável ao longo
+da vida, e — no contexto forense — já estruturado em infraestrutura
+normatizada mundialmente. Os marcadores STR (Short Tandem Repeats) são o
+padrão-ouro da identificação genética forense, utilizados nos bancos
+de dados nacionais (como o CODIS norte-americano) e nos kits comerciais
+de tipagem (GlobalFiler, PowerPlex Fusion). Um perfil STR típico
+identifica um indivíduo com probabilidade de coincidência de ordem de
+bilhões a um — o que levanta naturalmente a pergunta: se o perfil STR
+distingue com tanta segurança uma pessoa de todas as outras, poderia ele
+servir de fonte para derivação de chaves criptográficas?
+
+Essa pergunta, contudo, enfrenta um desafio quantitativo imediato.
+Identificação e imprevisibilidade criptográfica são propriedades
+distintas: um perfil pode ser único na população e ainda assim conter
+poucos bits de entropia efetiva, pois os genótipos possíveis são
+limitados pelas frequências alélicas populacionais — que são públicas.
+A literatura de criptografia é categórica sobre o risco: chaves
+derivadas de material de baixa entropia são vulneráveis a ataques de
+busca exaustiva, nos quais o adversário enumera os candidatos plausíveis
+da fonte em vez de todo o espaço de chaves. Para dados biométricos, cuja
+entropia dificilmente ultrapassa algumas dezenas de bits, a mitigação
+clássica combina duas estratégias: funções de derivação que elevam o
+custo computacional de cada tentativa, e fatores secretos adicionais
+que complementam a entropia da fonte.
+
+Nesse cenário, este trabalho investiga sistematicamente a viabilidade
+de derivar chaves AES-256 a partir de perfis STR forenses, respondendo
+a três perguntas específicas: (i) quanta entropia um painel STR fornece
+de fato como material criptográfico; (ii) em que medida uma função de
+derivação memory-hard — a Argon2id, vencedora da Password Hashing
+Competition (Biryukov, Dinu e Khovratovich, 2016) — é capaz de elevar o
+custo de ataques de força bruta sobre esse espaço reduzido; e (iii) se
+as chaves resultantes atendem aos critérios estatísticos de
+aleatoriedade esperados de material criptográfico legítimo.
+
+A contribuição do trabalho é fourfold. Primeiro, quantificamos
+empiricamente a entropia de um painel de cinco loci STR diplóides
+simulados segundo frequências plausíveis (≈22 bits por perfil). Segundo,
+especificamos um pipeline completo e determinístico de transformação —
+canonização unívoca do genótipo, derivação via Argon2id com parâmetros
+calibrados em hardware modesto — implementado como software livre,
+testado automaticamente e integralmente reprodutível. Terceiro,
+submetemos as chaves derivadas a três baterias de validação estatística
+(uniformidade qui-quadrado, equilíbrio posicional de bits e efeito
+avalanche), todas aprovadas. Quarto, discutimos com franqueza os limites
+da abordagem: a entropia genética isolada não alcança os patamares de
+segurança modernos, o que nos leva a recomendar, para aplicações
+críticas, um modelo híbrido que combine o perfil genético a um fator
+secreto adicional.
+
+O restante deste artigo está organizado da seguinte forma: a Seção 2
+detalha a metodologia, do painel sintético aos critérios estatísticos;
+a Seção 3 reporta os resultados de entropia, desempenho e validação;
+a Seção 4 discute implicações de segurança, comparação com propostas
+afins (Fuzzy Vault, BioHashing) e limitações; a Seção 5 conclui e
+aponta extensões futuras.
 
 ### 1.1 Contexto — biometria e criptografia
 - Crescimento de aplicações biométricas em autenticação
