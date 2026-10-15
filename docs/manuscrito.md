@@ -123,26 +123,111 @@ aponta extensões futuras.
 
 ---
 
-## 2. METODOLOGIA — MATERIAL PARCIALMENTE EXISTENTE
+## 2. METODOLOGIA
 
-### 2.1 Dados sintéticos e reprodutibilidade
-→ Base: README (seção nota de ética) + NB01 células 3–4
-→ Painel de 5 loci, frequências plausíveis, Hardy-Weinberg, seed=2024
-→ Justificativa ética: LGPD Art. 5º, II; nenhum dado real
+### 2.1 Desenho geral do estudo
 
-### 2.2 Quantificação de entropia
-→ Base: NB01 + `src/entropia.py`
-→ Shannon por locus, agregação, eficiência (D5S818 88% → candidato a exclusão)
+O estudo possui caráter experimental e computacional, estruturado em três
+etapas sequenciais: (i) quantificação da entropia disponível em um painel
+de loci STR; (ii) especificação e implementação de um pipeline
+determinístico de derivação de chaves criptográficas a partir de perfis
+genotípicos; e (iii) validação estatística das chaves produzidas. Toda a
+implementação foi desenvolvida em Python 3.12, com suíte de testes
+automatizados (15 casos) e controle de versão, e encontra-se integralmente
+disponível em repositório público (https://github.com/botelhojrv-dev/
+tcc-genetica-cripto), assegurando reprodutibilidade integral dos
+resultados.
 
-### 2.3 Canonização e derivação
-→ Base: NB02 + `src/derivacao.py` (docstrings já são texto metodológico!)
-→ Figura: `docs/fluxograma.md` (exportar SVG via mermaid.live)
-→ Parâmetros Argon2id: t=3, m=64 MiB, p=1, salt 16 bytes
+### 2.2 Geração de perfis sintéticos
 
-### 2.4 Validação estatística
-→ Base: NB03 células 5–10
-→ χ² uniformidade; equilíbrio de bits + IC 99%; avalanche (n=60)
-→ Nota: teste caseiro inspirado em NIST SP 800-22 (limitação a admitir)
+Foram utilizados perfis genotípicos sintéticos, simulados segundo
+frequências alélicas plausíveis para populações humanas, sob equilíbrio
+de Hardy-Weinberg. O painel compreendeu cinco loci STR diplóides
+(D18S51, D21S11, D3S1358, D5S818 e TH01), representativos dos marcadores
+de identificação humana utilizados em genética forense. A geração
+aleatória foi ancorada em semente fixa (seed=2024), garantindo que todos
+os experimentos sejam replicados de forma idêntica.
+
+A opção por dados sintéticos atende a dois requisitos: ético — a Lei Geral
+de Proteção de Dados (BRASIL, 2018) classifica dados genéticos como dados
+pessoais sensíveis (Art. 5º, inciso II), impondo restrições ao uso de
+perfis reais — e metodológico, ao eliminar variabilidade de coleta e
+permitir controle total dos parâmetros populacionais.
+
+### 2.3 Quantificação de entropia
+
+A entropia de Shannon foi calculada por locus com base nas frequências
+genotípicas esperadas, conforme:
+
+H = − Σ p(i) · log₂ p(i)
+
+em que p(i) denota a probabilidade do genótipo i no locus considerado. A
+entropia do perfil completo foi estimada pela soma das contribuições dos
+cinco loci, sob a hipótese de independência entre loci (pressuposição
+padrão em cálculos forenses de perfil combinado). Foram reportadas ainda
+a entropia máxima teórica de cada locus e a razão entre entropia
+observada e máxima (eficiência do locus como fonte de imprevisibilidade).
+
+### 2.4 Pipeline de derivação de chaves
+
+O pipeline de transformação do perfil genotípico em chave criptográfica
+compreendeu três estágios:
+
+**(i) Canonização do perfil.** O genótipo diplóide de cada locus foi
+serializado em representação canônica unívoca (alelos ordenados por valor
+numérico), concatenada em ordem fixa de loci, produzindo cadeia UTF-8
+determinística de aproximadamente 61 bytes. A canonização garante que
+genótipos equivalentes (mesmos alelos, ordem arbitrária) convergem para
+entrada idêntica na função de derivação.
+
+**(ii) Sal.** Foi acrescido salt aleatório de 16 bytes (128 bits), gerado
+por CSPRNG, anexado ao material derivado, prevenindo ataques com tabelas
+pré-computadas (rainbow tables) e permitindo derivação de chaves
+independentes a partir do mesmo perfil.
+
+**(iii) Função de derivação.** A derivação foi realizada com Argon2id
+(BIRYUKOV; DINU; KHOVRATOVICH, 2016), vencedora da Password Hashing
+Competition, na configuração t=3 (três iterações), m=64 MiB de memória
+e p=1 (paralelismo), produzindo chave de 32 bytes apta ao uso com
+AES-256. A Argon2id foi escolhida por combinar resistência a ataques
+massivamente paralelos em GPU/ASIC (custo de memória) com desempenho
+adequado em hardware de baixo custo.
+
+### 2.5 Critérios de validação estatística
+
+Foram derivadas 400 chaves independentes (variando-se perfil e salt),
+submetidas a três baterias de testes, inspiradas nos procedimentos do
+NIST SP 800-22 (NIST, 2010):
+
+1. **Uniformidade de distribuição de bytes** — teste qui-quadrado de
+   aderência sobre os 102.400 bytes agregados (400 chaves × 256 bytes),
+   com 255 graus de liberdade, avaliando a hipótese nula de distribuição
+   uniforme;
+
+2. **Equilíbrio posicional de bits** — proporção global de bits 1 e
+   razão bit a bit nas 256 posições, com intervalos de confiança de 99%
+   sob hipótese binomial (p=0,5);
+
+3. **Efeito avalanche** — distância de Hamming entre chaves derivadas de
+   entradas que diferem em um único bit (n=60 pares), com critério de
+   aprovação centrado em 50% de bits alterados (128/256 ± tolerância,
+   avaliada pela média de 5 medições para reduzir variância).
+
+Adicionalmente, foram medidas as distâncias de Hamming entre chaves de
+perfis distintos e entre chaves do mesmo perfil com salts distintos,
+para caracterizar a dissimilaridade produzida pela derivação.
+
+### 2.6 Desempenho computacional
+
+O tempo de derivação foi cronometrado em séries de execuções, reportando-
+se média e desvio-padrão. Os experimentos foram conduzidos em estação de
+trabalho convencional (AMD FX-8370E, 8 núcleos, arquitetura Piledriver,
+3,3 GHz; 8 GiB de RAM; armazenamento SSD SATA; sistema operacional GNU/
+Linux Mint 22.3, kernel 6.14; Python 3.12), deliberadamente representativa
+de hardware de baixo custo, datável de meados da década de 2010 — premissa
+metodológica conservadora: custos medidos em hardware modesto constituem
+limite inferior do custo imposto a eventuais atacantes.
+
 
 ---
 
