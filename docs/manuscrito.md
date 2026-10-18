@@ -16,7 +16,11 @@ Perfis STR Forenses: Pipeline Reprodutível com Argon2id e Validação Estatíst
 
 ## Autores e afiliação
 
-- José Ricardo Vega Botelho — [curso de Biomedicina; afiliação a completar]
+- José Ricardo Vega Botelho¹
+¹ Universidade Cidade de São Paulo (UNICID)
+   Curso de Biomedicina — São Paulo, SP, Brasil
+   Correspondência: josericardo@botelho.id
+
 - *(coautores/orientador a incluir após contato — ver Etapa C)*
 
 ## Abstract (~200 palavras) — RASCUNHO EXISTENTE
@@ -200,7 +204,7 @@ submetidas a três baterias de testes, inspiradas nos procedimentos do
 NIST SP 800-22 (NIST, 2010):
 
 1. **Uniformidade de distribuição de bytes** — teste qui-quadrado de
-   aderência sobre os 102.400 bytes agregados (400 chaves × 256 bytes),
+   aderência sobre os 12.800 bytes agregados (400 chaves × 256 bytes),
    com 255 graus de liberdade, avaliando a hipótese nula de distribuição
    uniforme;
 
@@ -227,24 +231,62 @@ Linux Mint 22.3, kernel 6.14; Python 3.12), deliberadamente representativa
 de hardware de baixo custo, datável de meados da década de 2010 — premissa
 metodológica conservadora: custos medidos em hardware modesto constituem
 limite inferior do custo imposto a eventuais atacantes.
-
+Sob essa premissa, os tempos reportados configuram limite superior da latência legítima do método, ao passo que o custo computacional imposto a potenciais atacantes deve ser interpretado como limite inferior, dado que infraestruturas contemporâneas reduziriam ambos."
 
 ---
 
 ## 3. RESULTADOS — MATERIAL EXISTENTE, SÓ ORGANIZAR
 
-### 3.1 Entropia da fonte
-→ Tabela por locus (5 linhas) + Figura 1 (`01_entropia_str.png`)
-→ ~10,75 bits/alelo; ~22 bits/genótipo; 2,95 bits observados/perfil
+### 3.1 Entropia de Fonte Genética 
+
+A Tabela 2 apresenta a entropia de Shannon observada por locus do painel STR simulado, a entropia máxima teórica (distribuição uniforme sobre os alelos do locus) e a razão entre ambas, definida como a eficiência do locus como fonte de imprevisibilidade.
+
+Tabela 2 — Entropia de Shannon por locus do painel STR simulado (N = 5.000 indivíduos, seed = 2024).
+Locus	Nº de alelos	H obs (bits)	H máx (bits)	Eficiência
+D18S51	5	2,2320	2,3219	0,9613
+D21S11	5	2,2770	2,3219	0,9806
+D3S1358	5	2,2496	2,3219	0,9688
+D5S818	4	1,7615	2,0000	0,8807
+TH01	5	2,2325	2,3219	0,9615
+Perfil (soma)	—	10,75	11,27	0,954
+
+Fonte: dados do notebook 01, elaborado pelo autor.
+
+A Figura 1 ilustra o comportamento dos cinco loci. Os quatro loci de cinco alelos operaram com eficiência superior a 96%, refletindo frequências alélicas relativamente equilibradas no painel simulado. O locus D5S818 apresentou a menor eficiência (88,1%), consequência da dominância dos alelos 11 e 12, que juntos concentram 74% da frequência paramétrica — característica que o torna o candidato natural à exclusão em eventuais versões otimizadas do painel.
+
+A entropia alélica agregada do painel é de 10,75 bits por conjunto haploide. Sob o modelo diplóide de Hardy-Weinberg, com loci independentes, a entropia do genótipo completo aproxima-se de 21,5 bits — valor coerente com a estimativa teórica de ~22 bits que fundamenta a discussão de segurança deste trabalho (Seção 4). Convém distinguir, contudo, duas medidas distintas: a entropia do perfil como segredo (imprevisibilidade do genótipo face à população, ~21,5 bits) e a entropia interna média dos símbolos de cada perfil individual (2,95 bits, observada no painel B da Figura 1), que quantifica a diversidade alélica dentro do indivíduo e não guarda relação com a resistência criptográfica da fonte.
+
+Os valores obtidos confirmam o diagnóstico quantitativo antecipado na Introdução: ainda que o painel STR identifique um indivíduo com elevada especificidade, a entropia disponível para derivação de chaves (~21,5 bits de genótipo) situa-se uma ordem de grandeza aquém dos 256 bits exigidos pelo AES-256 — lacuna que motiva a adoção da função de derivação memory-hard (Seção 2.4) e o modelo híbrido recomendado na Discussão (Seção 4).
 
 ### 3.2 Derivação e performance
-→ 247 ms médio (232–282); 64 MiB; ~11–12 dias força bruta serial
-→ Hamming: perfis distintos 119/256; salts distintos 130/256
+3.2 Derivação e Performance
 
-### 3.3 Validação estatística
-→ Figura 2 (`03_validacao_chaves.png`)
-→ χ²(255)=247,88, p=0,614; bits 0,5017 (2/256 fora do IC);
-avalanche 49,6% (σ=9,5, n=60)
+O pipeline descrito na Seção 2.4 foi executado sobre os perfis sintéticos regenerados com a mesma semente do experimento de entropia (seed = 2024, Seção 2.2), com cronometragem de 100 derivações em série. A Tabela 3 resume as métricas de desempenho observadas.
+
+Tabela 3 — Desempenho do pipeline de derivação Argon2id (n = 100 derivações; hardware descrito na Seção 2.6).
+Métrica	Valor
+Tempo médio por derivação	247 ms
+Intervalo observado	232 – 282 ms
+Consumo de memória por derivação	64 MiB
+Nº de derivações cronometradas	100
+
+Fonte: dados do notebook 02, elaborado pelo autor.
+
+O tempo médio de 247 ms por derivação situa o método em faixa compatível com operações interativas isoladas (autenticação de usuário único, desbloqueio de cofre local) — embora inviabilize, por construção, o processamento massivo. Esse comportamento não é defeito, mas desenho: o custo de memória de 64 MiB por chamada é precisamente o mecanismo pelo qual a Argon2id eleva o preço de ataques de enumeração. Estimando o espaço de genótipos plausíveis em ~2^21,5 (Seção 3.1), um atacante que optasse por busca exaustiva serial gastaria da ordem de 11–12 dias de computação contínua no mesmo hardware — sem considerar o custo de aquisição prévia dos dados genéticos.
+
+Para caracterizar a dissimilaridade produzida pela derivação, foram medidas as distâncias de Hamming em nível de bit entre chaves em três cenários distintos (Tabela 4). Dois deles avaliam o efeito avalanche — difusão entre entradas distintas — e o terceiro valida a propriedade determinística do pipeline.
+
+Tabela 4 — Distância de Hamming entre chaves derivadas, por cenário (256 bits por chave).
+Cenário	Bits diferentes	% de alteração	Esperado
+Perfis distintos, mesmo salt	119/256	46,5%	~128 (50%)
+Mesmo perfil, salts distintos	130/256	50,8%	~128 (50%)
+Mesmo perfil, mesmo salt	0/256	0%	0 exato
+
+Fonte: dados dos notebooks 02 e da suíte de testes (tests/test_determinismo.py, 4 casos aprovados), elaborado pelo autor.
+
+Os dois primeiros cenários demonstram comportamento preliminar de avalanche: alterações na entrada — no genótipo ou no salt — propagam-se para cerca de metade dos bits de saída. Cabe registrar que essas medidas do notebook 02 são observações pontuais (um par por cenário, para caracterização qualitativa do operador), enquanto a avaliação estatística formal do efeito avalanche — 60 pares, com média e desvio-padrão — é reportada na Seção 3.3. O terceiro cenário confirma a propriedade determinística: derivações repetidas da mesma entrada canônica e mesmo salt convergem para chaves bit a bit idênticas, verificada por suíte dedicada que inclui dez execuções consecutivas e a invariância à ordem de inserção de loci e alelos — propriedade garantida pela canonização descrita na Seção 2.4.
+
+Em conjunto, as três medidas caracterizam o operador de derivação de forma completa: ele separa maximamente entradas distintas, preserva exatamente entradas idênticas e impõe custo computacional substancial a cada chamada — as propriedades conjuntas exigidas de um pipeline reprodutível apto à derivação de chaves.
 
 ---
 

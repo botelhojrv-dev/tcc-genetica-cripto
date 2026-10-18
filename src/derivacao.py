@@ -4,7 +4,7 @@ Módulo de derivação de chave criptográfica a partir de perfis STR forenses.
 Transforma perfis genéticos em material criptográfico (32 bytes)
 via Argon2id memory-hard KDF, com serialização determinística.
 
-Autor: Ricardo
+Autor: José Ricardo Vega Botelho 
 Data: Setembro 2026
 """
 
