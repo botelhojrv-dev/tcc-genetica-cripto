@@ -288,6 +288,18 @@ Os dois primeiros cenários demonstram comportamento preliminar de avalanche: al
 
 Em conjunto, as três medidas caracterizam o operador de derivação de forma completa: ele separa maximamente entradas distintas, preserva exatamente entradas idênticas e impõe custo computacional substancial a cada chamada — as propriedades conjuntas exigidas de um pipeline reprodutível apto à derivação de chaves.
 
+### 3.3 Validação Estatística das Chaves
+Para avaliar se as chaves derivadas atendem aos critérios estatísticos de material criptográfico legítimo, foram geradas 400 chaves independentes (variando-se perfil e salt), compondo 12.800 bytes agregados, submetidos às três baterias de testes especificadas na Seção 2.5, sob nível de significância α = 0,05, conforme recomendação do NIST SP 800-22. A Figura 2 sintetiza os resultados.
+
+Bateria 1 — Uniformidade de distribuição de bytes. O teste qui-quadrado de aderência sobre os 12.800 bytes agregados (frequência esperada de 50 ocorrências por valor, 255 graus de liberdade) resultou em χ²(255) = 247,88, p = 0,614. A hipótese nula de distribuição uniforme não foi rejeitada: o valor de p situa-se muito acima do limiar de significância, indicando que a frequência observada dos 256 valores de byte (faixa de 32 a 71 ocorrências) não desvia da expectativa uniforme de forma estatisticamente detectável. O estatístico ligeiramente inferior aos graus de liberdade (247,88 < 255) denota dispersão marginalmente menor que a esperada sob aleatoriedade perfeita — comportamento plenamente compatível com flutuação amostral, não indício de estrutura nos dados.
+
+Bateria 2 — Equilíbrio posicional de bits. A proporção global de bits 1 nos 102.400 bits agregados foi de 0,5017 — dentro do intervalo de confiança de 99% sob hipótese binomial (p = 0,5). Na avaliação posicional, com intervalos individuais de 99% para cada uma das 256 posições de bit (0,436 – 0,564 para n = 400 observações por posição), verificou-se que 2 posições situaram-se fora do intervalo — resultado consistente com a expectativa estatística de ~2,6 posições fora do intervalo por puro acaso. A bateria foi, portanto, aprovada, sem indício de viés posicional detectável por um adversário.
+
+Bateria 3 — Efeito avalanche. As distâncias de Hamming entre chaves derivadas de pares de entrada diferindo em um único bit (inversão do bit menos significativo da representação canônica, mesmo salt) foram medidas em n = 60 pares, resultando em média de 127,1 bits alterados de 256 (49,6%), σ = 9,5 bits, faixa observada de 101 a 146. A média situa-se dentro do critério de aprovação centrado em 50% (128/256 ± tolerância), e o desvio-padrão observado é compatível com o valor teórico sob difusão ideal (σ ≈ 8 bits), conferindo estabilidade à medida. Esses resultados quantificam estatisticamente o comportamento preliminarmente caracterizado na Tabela 4 (Seção 3.2), fechando o ciclo entre observação pontual e validação amostral.
+
+Em síntese, as três baterias foram integralmente aprovadas: as chaves derivadas são estatisticamente indistinguíveis de material aleatório genuíno nas dimensões testadas. Importa sublinhar, contudo, o alcance exato dessa conclusão — as baterias certificam a qualidade estatística da saída do pipeline (uniformidade, equilíbrio e difusão), e não a entropia da fonte genética, que permanece limitada a ~21,5 bits conforme quantificado na Seção 3.1. A distinção é central para a discussão de segurança desenvolvida na Seção 4: a Argon2id produz chaves com excelentes propriedades estatísticas a partir de entrada de entropia restrita, propriedades que não substituem, mas complementam, a análise de custo de ataques de enumeração.
+
+
 ---
 
 ## 4. DISCUSSÃO — RASCUNHO EXISTENTE (refinar)
