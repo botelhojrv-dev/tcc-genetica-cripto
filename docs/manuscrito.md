@@ -345,9 +345,19 @@ Os resultados devem ser lidos sob seis limitações explícitas. Primeira, o tam
 ---
 
 ## 5. CONCLUSÃO
-→ Base: §6 de `docs/discussao_gap_entropia.md`
-→ Viabilidade técnica demonstrada + honestidade científica sobre limites
-→ Trabalhos futuros: painel 24 loci, SNPs, bateria NIST completa
+
+Este trabalho investigou a viabilidade de derivar chaves criptográficas AES-256 a partir de perfis STR forenses, mediante um pipeline determinístico e integralmente reprodutível. A resposta obtida tem duas faces, ambas sustentadas por evidência experimental.
+
+No plano técnico, a viabilidade foi demonstrada. O pipeline — canonização unívoca do genótipo, derivação via Argon2id com parâmetros calibrados (t=3, m=64 MiB, p=1) — produziu chaves estatisticamente indistinguíveis de material aleatório genuíno nas três baterias de validação aplicadas: uniformidade de distribuição de bytes (χ²(255) = 247,88; p = 0,614), equilíbrio posicional de bits (proporção global de 0,5017; 2/256 posições fora do intervalo de 99%, contra ~2,6 esperadas por acaso) e efeito avalanche (49,6% de bits alterados; σ = 9,5; n = 60). A propriedade determinística foi verificada por suíte de testes automatizada, incluindo a invariância à ordem de entrada de loci e alelos. O custo computacional de 247 ms por derivação em hardware modesto situa o método em regime compatível com operações interativas, simultaneamente impondo custo substancial à enumeração por atacantes (~11–12 dias para o espaço completo de genótipos, em limite inferior conservador).
+
+No plano da segurança, contudo, a conclusão exige franqueza: a entropia genética do painel estudado (~21,5 bits de genótipo) não alcança os patamares contemporâneos — 128 bits no mínimo — nem a qualidade estatística da saída modifica esse quadro, pois o adversário ataca o espaço de entrada, não a saída. Recomenda-se, portanto, para aplicações críticas, o modelo híbrido que combina o perfil genético a um fator secreto adicional, somando entropias independentes e preservando a irrevogabilidade do componente biométrico como fator de vinculação do titular.
+
+Como extensões futuras, apontam-se quatro direções: a ampliação do painel para os 20–24 loci dos kits comerciais contemporâneos, elevando a entropia para a casa de 100 bits; a incorporação de SNPs como fonte complementar; a execução da bateria completa do NIST SP 800-22 (15 subtestes, ≥10⁶ bits); e o reporte da min-entropia por locus, medida conservadora mais adequada à análise de enumeração gulosa. O trabalho contribui, assim, metodologicamente para a intersecção entre genética forense e criptografia aplicada, estabelecendo tanto o que a abordagem oferece quanto — com igual rigor — aquilo que ela não pode prometer.
+Abstract (~200 palavras)
+
+Dados biométricos são identificadores naturais, mas segredos pobres: conhecidos pelas frequências populacionais, não podem alimentar diretamente a criptografia moderna. Este trabalho investiga a derivação de chaves AES-256 a partir de perfis STR forenses, mediante pipeline determinístico de canonização e função de derivação memory-hard Argon2id (t=3, m=64 MiB, p=1), implementado como software livre e integralmente reprodutível. Foram quantificadas a entropia do painel de cinco loci diplóides simulados (10,75 bits por conjunto haploide; ~21,5 bits de genótipo) e submetidas à validação estatística 400 chaves derivadas. As três baterias foram integralmente aprovadas: uniformidade qui-quadrado de bytes (χ²(255) = 247,88; p = 0,614), equilíbrio posicional de bits (proporção global 0,5017; 2/256 posições fora do intervalo de 99%) e efeito avalanche (49,6% ± 9,5 bits; n = 60). O custo médio de derivação foi de 247 ms em hardware modesto. Os resultados demonstram viabilidade técnica do pipeline, com dissipação ideal de vizinhanças genéticas; a entropia da fonte (~21,5 bits), contudo, situa-se muito aquém dos padrões de segurança, motivando modelo híbrido com fator secreto adicional para aplicações críticas.
+
+Palavras-chave: genética forense; criptografia; STR; Argon2id; KDF; validação estatística; reprodutibilidade.
 
 ## REFERÊNCIAS (iniciais — expandir com pesquisa bibliográfica)
 
