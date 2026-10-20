@@ -1,0 +1,44 @@
+{
+  "hardware": "AMD FX-8370E, 8 GiB RAM, Linux Mint 22.3, kernel 6.14",
+  "material_bytes": 81,
+  "espaco_busca_genotipos": 2965820.800757861,
+  "multiplicador_vs_sha256": 162328.04882867422,
+  "resultados": [
+    {
+      "funcao": "SHA-256",
+      "n_iter": 1000,
+      "media_us": 1.6784500039648265,
+      "min_us": 1.5129990060813725,
+      "max_us": 12.879001587862149,
+      "cand_por_seg": 595787.7789852571,
+      "dias_enum_espaco": 5.761553165267358e-05
+    },
+    {
+      "funcao": "SHA3-256",
+      "n_iter": 1000,
+      "media_us": 1.883140914287651,
+      "min_us": 1.7359998309984803,
+      "max_us": 12.463999155443162,
+      "cand_por_seg": 531027.7061120926,
+      "dias_enum_espaco": 6.464188072167236e-05
+    },
+    {
+      "funcao": "BLAKE3",
+      "n_iter": 1000,
+      "media_us": 2.327497975784354,
+      "min_us": 1.8639984773471951,
+      "max_us": 42.674000724218786,
+      "cand_por_seg": 429645.9160885008,
+      "dias_enum_espaco": 7.989516099887793e-05
+    },
+    {
+      "funcao": "Argon2id",
+      "n_iter": 10,
+      "media_us": 272459.5142000908,
+      "min_us": 267363.139999361,
+      "max_us": 284435.7879985182,
+      "cand_por_seg": 3.670270069062858,
+      "dias_enum_espaco": 9.352616835405222
+    }
+  ]
+}
