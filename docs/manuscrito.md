@@ -231,7 +231,7 @@ Linux Mint 22.3, kernel 6.14; Python 3.12), deliberadamente representativa
 de hardware de baixo custo, datável de meados da década de 2010 — premissa
 metodológica conservadora: custos medidos em hardware modesto constituem
 limite inferior do custo imposto a eventuais atacantes.
-Sob essa premissa, os tempos reportados configuram limite superior da latência legítima do método, ao passo que o custo computacional imposto a potenciais atacantes deve ser interpretado como limite inferior, dado que infraestruturas contemporâneas reduziriam ambos."
+Sob essa premissa, os tempos reportados configuram limite superior da latência legítima do método, ao passo que o custo computacional imposto a potenciais atacantes deve ser interpretado como limite inferior, dado que infraestruturas contemporâneas reduziriam ambos.
 
 ---
 
@@ -259,7 +259,6 @@ A entropia alélica agregada do painel é de 10,75 bits por conjunto haploide. S
 Os valores obtidos confirmam o diagnóstico quantitativo antecipado na Introdução: ainda que o painel STR identifique um indivíduo com elevada especificidade, a entropia disponível para derivação de chaves (~21,5 bits de genótipo) situa-se uma ordem de grandeza aquém dos 256 bits exigidos pelo AES-256 — lacuna que motiva a adoção da função de derivação memory-hard (Seção 2.4) e o modelo híbrido recomendado na Discussão (Seção 4).
 
 ### 3.2 Derivação e performance
-3.2 Derivação e Performance
 
 O pipeline descrito na Seção 2.4 foi executado sobre os perfis sintéticos regenerados com a mesma semente do experimento de entropia (seed = 2024, Seção 2.2), com cronometragem de 100 derivações em série. A Tabela 3 resume as métricas de desempenho observadas.
 
@@ -302,15 +301,46 @@ Em síntese, as três baterias foram integralmente aprovadas: as chaves derivada
 
 ---
 
-## 4. DISCUSSÃO — RASCUNHO EXISTENTE (refinar)
+## 4. DISCUSSÃO 
 
-→ Base integral: `docs/discussao_gap_entropia.md`
-- 4.1 O gap 22 vs. 256 bits
-- 4.2 O que o Argon2id compra e o que não compra
-- 4.3 Ataques de vizinhança genética (parentes) — avalanche mitiga?
-- 4.4 Recomendação de modelo híbrido (fator secreto adicional)
-- 4.5 Comparação com Fuzzy Vault / BioHashing / secure sketch
-- 4.6 Limitações: n amostral, bateria NIST completa, painel de 5 loci
+### 4.1 O gap de entropia: 22 bits diante de 256
+
+O resultado mais importante deste trabalho é também o mais desconfortável: a entropia genética disponível no painel STR estudado — aproximadamente 21,5 bits de genótipo (Seção 3.1) — situa-se uma ordem de grandeza aquém dos 256 bits exigidos pela chave-alvo (AES-256) e três ordens de grandeza aquém do patamar de 128 bits considerado o mínimo contemporâneo. Essa lacuna não é defeito metodológico do presente estudo, mas característica intrínseca da fonte: a imprevisibilidade de um genótipo é limitada pelas frequências alélicas populacionais, que são públicas e amplamente documentadas (Seção 2.3). Um perfil STR identifica um indivíduo com especificidade extraordinária — bilhões para um — mas identificar não é o mesmo que ser imprevisível: a especificidade advém da baixa probabilidade de coincidência entre dois perfis sorteados, enquanto a imprevisibilidade criptográfica exige a alta entropia do segredo face ao adversário. O adversário forense conhece as distribuições; sabe enumerar genótipos por ordem decrescente de probabilidade; e dispõe, em cenários plausíveis, de informação genética parcial do alvo (parentes próximos, bancos forense-institucionais).
+
+### 4.2 O que a Argon2id compra — e o que não compra
+
+Os resultados da Seção 3.2 permitem quantificar com franqueza o papel da função de derivação. Com tempo médio de 247 ms por derivação no hardware de referência, a busca exaustiva serial sobre o espaço de ~2^21,5 genótipos custa da ordem de 11–12 dias de computação contínua — estimativa que constitui, conforme argumentado na Seção 2.6, um limite inferior do custo real imposto a atacantes com hardware superior. A Argon2id, portanto, compra tempo: eleva o custo por tentativa em três a quatro ordens de grandeza frente a uma derivação leve (SHA-256 pura, por exemplo, processaria o mesmo espaço em segundos). O mecanismo memory-hard é essencial nessa conta, pois neutraliza a vantagem de hardware massivamente paralelo (GPU/ASIC), mantendo o custo do ataque aproximadamente linear em memória — recurso que não segue a lei de Moore com a mesma generosidade que a computação.
+
+O que a função de derivação não compra é entropia. Nenhuma KDF, por construção ou sofisticação, aumenta a imprevisibilidade da entrada: o que ela faz é dilatar o custo de cada enumeração, transformando 21,5 bits de entropia em um espaço de busca computacionalmente caro, mas ainda finito e conhecido. A distinção, embora elementar para a criptografia, merece ênfase neste contexto biométrico: a literatura de aplicações leigas por vezes sugere que "passar o DNA por uma função forte" basta para produzir segurança de 256 bits — os resultados aqui apresentados (chaves estatisticamente perfeitas, fonte com 21,5 bits) demonstram precisamente o contrário: a qualidade estatística da saída (Seção 3.3) não é transferível como segurança da chave, pois o adversário ataca o espaço de entrada, não a saída.
+
+### 4.3 Ataques de vizinhança genética: o que o avalanche mitiga
+
+
+Cenário adversarial específico da fonte genética: parentes de primeiro grau compartilham, em média, 50% de seus alelos. Um irmão do titular da chave conhece, por consequência, metade do material de derivação — e poderia tentar enumeração apenas sobre a metade desconhecida, reduzindo o espaço de busca em fator exponencial (~2^11). Os resultados da Bateria 3 (Seção 3.3) fornecem a resposta a essa ameaça: a distância de Hamming média de 49,6% (σ = 9,5, n = 60) entre chaves derivadas de entradas que diferem em um único bit demonstra que meia entrada compartilhada não implica nenhuma correlação aproveitável na saída — chaves de parentes próximos são tão dissimilares quanto chaves de indivíduos arbitrários. O efeito avalanche, portanto, quebra estruturalmente a vizinhança genética: o atacante-parente não pode fatorar a busca em torno do que conhece, pois a função de derivação não preserva proximidade de entrada em proximidade de saída.
+
+Essa propriedade, contudo, precisa ser lida com precisão: ela impede o ataque por vizinhança, mas não reduz o espaço de busca total — o irmão atacante ainda pode enumerar os ~2^21,5 genótipos plausíveis (incluindo os seus próprios, os de outros parentes, e combinações de alelos familiares), pagando o custo integral da busca exaustiva. Em outras palavras, o avalanche transforma um ataque inteligente (localizado na vizinhança) num ataque burro (global), mas este último continua viável pela limitação de entropia da fonte — argumento que reforça a recomendação de modelo híbrido desenvolvida a seguir.
+
+
+### 4.4 Recomendação de modelo híbrido
+
+
+Os resultados das seções anteriores convergem para uma arquitetura de segurança em camadas, que denominamos modelo híbrido: a chave final de 256 bits derivada como XOR (ou concatenação seguida de segunda derivação) de duas fontes independentes — o perfil STR e um fator secreto adicional detido pelo usuário (frase-senha, chave de hardware, segredo memorizado). A composição preserva as virtudes de cada componente: o perfil genético oferece um fator que não pode ser esquecido nem obtido por phishing (está, literalmente, no corpo do titular), enquanto o fator secreto adicional aporta a entropia que a fonte genética não pode fornecer. Sob o pressuposto de independência estatística entre os fatores, a entropia efetiva do modelo híbrido aproxima-se da soma das contribuições — uma frase-senha modesta de 40 bits, combinada ao painel de ~21,5 bits, eleva a segurança conjunta para para a faixa de 60 bits, já proibitivos para ataques de enumeração offline realizáveis com hardware convencional, mesmo com o custo por tentativa ampliado pela Argon2id.
+
+O modelo híbrido resolve, adicionalmente, o dilema da irrevogabilidade biométrica: comprometido o fator secreto, ele pode ser substituído sem que o perfil genético precise ser abandonado como material de derivação. Em termos de modelo de ameaça, a arquitetura desloca o ponto crítico de falha do segredo genético (que não se troca) para o segredo auxiliar (que se troca) — inversão que prescinde de qualquer novidade técnica, mas cuja viabilidade só se sustenta porque o pipeline-base demonstrou ser determinístico, estatisticamente sólido e computacionalmente adequado (Seções 3.2 e 3.3).
+
+
+### 4.5 Posicionamento frente a Fuzzy Vault, BioHashing e secure sketches
+
+
+O pipeline proposto difere das abordagens clássicas de biometria criptográfica em um aspecto estrutural: ele não enfrenta o problema da variação intra-classe. O Fuzzy Vault (Juels; Sudan, 2006) e os fuzzy extractors (Dodis et al., 2008) foram concebidos para biometrias ruidosas — impressões digitais e íris cujas leituras sucessivas diferem, exigindo mecanismos de correção de erro (Chaffing, secure sketches, códigos de Gray) capazes de recuperar a mesma chave a partir de amostras imperfeitas. O dado STR, nesse contexto, é excepcionalmente bem-comportado: a tipagem laboratorial de um mesmo indivíduo reproduz o genótipo com exatidão determinística (trata-se de leitura de genótipo, não de fenótipo variável), o que eliminou do presente pipeline toda a maquinaria de tolerância — e, com ela, os vetores de ataque típicos desses mecanismos, como a análise dos pontos chaff de um vault ou a exploração da informação auxiliar pública dos fuzzy extractors, que pode vazar parcialmente o segredo biométrico.
+
+Já frente ao BioHashing (Teoh et al., 2004), a distinção é de papel, não de mecanismo : o BioHashing projeta a biometria sobre um domínio pseudo-aleatório parametrizado por um token secreto, perseguindo revocabilidade; o presente trabalho adota caminho conceitualmente mais simples — a separação entre fonte pública de identidade (perfil) e fator secreto (modelo híbrido) — alcançando análogo pragmático de revocabilidade sem a sofisticação do domínio projetado, ao custo reconhecido de exigir do usuário a guarda de um fator adicional. Nenhuma dessas famílias de técnicas, note-se, resolve o problema central quantificado neste trabalho: a entropia limitada da fonte biométrica — elas o administram de maneiras distintas, cada qual com seu custo.
+
+### 4.6 Limitações
+
+
+Os resultados devem ser lidos sob seis limitações explícitas. Primeira, o tamanho do painel: cinco loci Diplóides fornecem ~21,5 bits; painéis forenses contemporâneos de 20 a 24 loci (GlobalFiler, PowerPlex Fusion) elevariam a entropia para a casa de 100 bits — crescimento expressivo, mas ainda inferior aos 128 bits do padrão mínimo. Segunda, o espaço amostral da validação: 400 chaves e 12.800 bytes aprovam as três baterias aplicadas, mas a bateria completa do NIST SP 800-22 (15 subtestes) requer no mínimo 10⁶ bits, permanecendo como trabalho futuro. Terceira, as medidas de dissimilaridade pontuais: as distâncias de Hamming da Tabela 4 (perfis distintos, salts distintos) baseiam-se em observação de par único, embora o efeito avalanche tenha sido confirmado estatisticamente com n = 60 (Seção 3.3); a re-execução sistemática desses cenários ampliaria a robustez do reporte. Quarta, a simulação populacional: as frequências alélicas do painel são plausíveis, não empíricas; resultados com dados de população real (NIST STRBase, bases brasileiras) podem diferir quantitativamente, embora o argumento estrutural — gap frente a 256 bits — seja insensível a essa troca. Quinta, a ausência de min-entropia reportada: a entropia de Shannon superestima a resistência à enumeração gulosa; a min-entropia por locus (−log₂ max pᵢ) constituiria limite inferior mais conservador e deverá integrar versões futuras. Sexta, o cenário de laboratório: a viabilidade operacional pressupõe tipagem genômica confiável disponível no fluxo de autenticação, contingência tecnológica e regulatória fora do escopo deste estudo.
+
 
 ---
 
