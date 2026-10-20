@@ -23,14 +23,6 @@ Perfis STR Forenses: Pipeline Reprodutível com Argon2id e Validação Estatíst
 
 - *(coautores/orientador a incluir após contato — ver Etapa C)*
 
-## Abstract (~200 palavras) — RASCUNHO EXISTENTE
-
-→ Base: `docs/resumo_executivo.md` (versão expandida, parágrafo 1)
-→ Incluir: contexto, método, 3 números-chave (χ² p=0,614; avalanche 49,6%;
-247 ms), conclusão honesta do gap de entropia
-→ Palavras-chave: genética forense; criptografia; STR; Argon2; KDF;
-validação estatística; reprodutibilidade
-
 ---
 
 ### 1. INTRODUÇÃO
@@ -46,7 +38,7 @@ biométrica está permanentemente "exposta ao mundo" — pode ser coletada
 sem consentimento (uma digital em um copo, DNA em saliva residual) e não
 pode ser trocada caso comprometida. Essa assimetria fez surgir um campo
 próprio de pesquisa, a biometria criptográfica, com propostas originais 
-comoFuzzy Vault (JUELS; SUDAN, 2006) e os fuzzy extractors (DODIS; OSTROVSKY; REYZIN; SMITH, 2008).
+como Fuzzy Vault (JUELS; SUDAN, 2006) e os fuzzy extractors (DODIS; OSTROVSKY; REYZIN; SMITH, 2008).
 
 Dentre as modalidades biométricas, o DNA ocupa posição singular: é o
 identificador humano mais discriminante conhecido, inalterável ao longo
@@ -106,24 +98,6 @@ a Seção 4 discute implicações de segurança, comparação com propostas
 afins (Fuzzy Vault, BioHashing) e limitações; a Seção 5 conclui e
 aponta extensões futuras.
 
-### 1.1 Contexto — biometria e criptografia
-- Crescimento de aplicações biométricas em autenticação
-- Paradigma: dado biométrico não é segredo (está "no mundo"), logo não
-  pode alimentar criptografia diretamente — problema clássico da área
-  (citar Juels & Sudan 2006; Dodis et al. 2008)
-
-### 1.2 Os STRs como fonte de identificação
-- Marcadores padrão-ouro forense (CODIS; kits GlobalFiler/PowerPlex)
-- Propriedades: polimorfismo, estabilidade, banques de dados existentes
-- Pergunta de pesquisa: *quanta entropia os STRs realmente oferecem
-  para fins criptográficos, e essa entropia é "esticável" com KDF?*
-
-### 1.3 Contribuições deste trabalho
-1. Quantificação empírica da entropia de painel STR (NB01)
-2. Pipeline completo reprodutível: canonização → Argon2id → chave (NB02)
-3. Validação estatística em 3 baterias (NB03)
-4. Discussão honesta dos limites e recomendação de modelo híbrido
-   (`docs/discussao_gap_entropia.md`)
 
 ---
 
@@ -204,7 +178,7 @@ submetidas a três baterias de testes, inspiradas nos procedimentos do
 NIST SP 800-22 (NIST, 2010):
 
 1. **Uniformidade de distribuição de bytes** — teste qui-quadrado de
-   aderência sobre os 12.800 bytes agregados (400 chaves × 256 bytes),
+   aderência sobre os 12.800 bytes agregados (400 chaves × 32 bytes),
    com 255 graus de liberdade, avaliando a hipótese nula de distribuição
    uniforme;
 
@@ -371,4 +345,11 @@ Palavras-chave: genética forense; criptografia; STR; Argon2id; KDF; validação
 - *(completar: livros de genética forense — Butler "Forensic DNA Typing"?)*
 
 ## Agradecimentos / Suporte financeiro
+
+- Ao meu gato que nos meses de pesquisa sempre estava presente;
+Pata no teclado, 
+meu porto seguro agora,
+obrigado, gatinho. 
+
+
 → (a definir — iniciação científica? instituição?)
