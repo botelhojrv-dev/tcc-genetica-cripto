@@ -313,4 +313,128 @@ Duas notas metodológicas completam a leitura. O BLAKE3 mediu tempo superior ao 
 
 O conjunto de resultados deste capítulo — entropia limitada, operador determinístico e estatisticamente sólido, custo de enumeração elevado — estabelece o quadro que a Discussão interpreta: viabilidade técnica demonstrada, com limitação estrutural na fonte que nenhum refinamento do operador de derivação elimina.
 
+8. APLICAÇÕES
+8.1 Saúde digital e prontuário eletrônico
+
+A aplicação mais imediata da CKU situa-se na interoperabilidade de registros de saúde. O prontuário eletrônico do paciente (PEP) exige mecanismos de vinculação entre indivíduo e registro que sejam ao mesmo tempo únicos, persistentes e verificáveis. A CKU derivada do perfil genético oferece um identificador com vantagens estruturais frente às chaves convencionais: não pode ser esquecida (o titular nasce portando o material de derivação), não pode ser transferida (vinculação biológica direta) e não depende de terceiro emissor (ao contrário de CPF, RG ou certificados digitais).
+
+Em arquiteturas típicas, a CKU funcionaria como chave de criptografia simétrica (AES-256) para o envelope criptográfico do prontuário, com o perfil genético atuando como material de derivação verificado no momento do atendimento — por exemplo, na admissão hospitalar, mediante tipagem rápida do painel didático ou completo. Para aplicações críticas do setor (registros contendo dados sensíveis sob a LGPD), aplica-se o modelo híbrido da Seção 6.5, agregando fator secreto detido pelo titular.
+8.2 Sistemas de alta segurança e controle de acesso
+
+Ambientes que exigem autenticação de alta confiança — laboratórios forenses, instalações governamentais classificadas, infraestruturas críticas — podem empregar a CKU como fator de autenticação de algo que o usuário é, com especificidade superior às biometrias convencionais. Enquanto impressões digitais podem ser forjadas com moldes, faces replicadas por deepfakes e íris capturadas por fotografia de alta resolução, o perfil genético requer amostra biológica legítima do titular — elevando o custo do ataque de falsificação a patamares qualitativamente distintos.
+
+O custo computacional de 247 ms por verificação (Seção 7.2), embora inviabilize processamento massivo, é plenamente compatível com autenticação interativa de usuário único — o cenário exato do controle de acesso físico ou lógico. O mesmo custo que limita o sistema legítimo é o que penaliza o atacante que tenta enumeração (Seção 7.4): o desenho beneficia deliberadamente o uso legítimo em detrimento do abuso.
+8.3 Genética forense e cadeia de custódia
+
+Na própria genética forense, a CKU oferece ferramenta de integridade de cadeia de custódia: vestígios biológicos coletados em local de crime podem ter seus perfis codificados e derivados como chaves de autenticação dos laudos associados, criando vínculo criptográfico entre amostra, perícia e conclusão. Qualquer adulteração do registro intermediário — troca de amostras, edição de laudo — resulta em chave inválida na verificação, tornando a manipulação detectável.
+
+Aplicação correlata é a área de parentesco e identificação de desaparecidos, na qual bancos de perfis genéticos de vítimas de catástrofes ou de pessoas desaparecidas poderiam empregar chaves derivadas como índices de busca à prova de vazamento: um banco comprometido exporia chaves inúteis à reconstrução dos perfis originais (irreversibilidade, Seção 6.1), protegendo os dados sensíveis subjacentes mesmo em cenário de violação do repositório.
+8.4 Gestão corporativa e assinatura de documentos
+
+Em contexto corporativo — área da formação em Administração —, a CKU presta-se à autenticação de atos de gestão de alta formalidade: assinatura de contratos, aprovação de transações sensíveis, deleção controlada de registros. A diferença conceitual frente à assinatura digital convencional é a natureza do fator: em vez de depender de posse (token) ou conhecimento (senha), ambos delegáveis ou roubáveis, o fator é inseparável do titular — propriedade valiosa em governança, onde a atribuição de responsabilidade individual é imperativa.
+
+A limitação estrutural, contudo, impõe-se com particular relevância neste domínio: contrariamente à prática de assinaturas digitais, atos societários exigem eventualmente revogação de credenciais (exoneração de dirigente, por exemplo). A irreversibilidade do material genético torna imprescindível a arquitetura híbrida — o fator genético autentica o vínculo identitário; o fator secreto, revogável, autoriza a pratica do ato — decomposição analisada na Seção 10.
+8.5 Conformidade com a LGPD
+
+Todas as aplicações precedentes共享 um fundamento regulatório comum. A Lei nº 13.709/2018 (LGPD) classifica dados genéticos como dados pessoais sensíveis (Art. 5º, II), submetendo seu tratamento a bases legais específicas e a princípios como finalidade, necessidade e segurança (BRASIL, 2018). A arquitetura da CKU dialoga com esses princípios em três frentes:
+
+Minimização: a chave derivada não contém o perfil genético — a irreversibilidade da função de derivação significa que o dado sensível permanece apenas no processo de derivação, jamais no artefato armazenado ou transmitido;
+
+Finalidade: o uso do perfil exclusivamente para derivação, com descarte do material após o processo, delimita a finalidade do tratamento de forma estrita — diferentemente de bancos de perfis completos, cuja reutilização para outras finalidades é tecnicamente possível;
+
+Segurança: a adoção da função memory-hard constitui medida técnica proporcional ao risco, na linha do princípio da segurança (Art. 46), elevando o custo de ataques de enumeração em ordens de magnitude.
+
+Cabe registrar, por honestidade regulatória, que a tipagem genética como etapa de autenticação constitui, ela própria, tratamento de dado sensível — de modo que a adoção da CKU não dispensa o consentimento ou base legal adequada para a coleta da amostra no ponto de verificação. A CKU mitiga os riscos de armazenamento, não os da coleta.
+
+9. LIMITAÇÕES
+
+Este trabalho apresenta limitações em dois planos distintos — estruturais, inerentes ao próprio conceito de derivação criptográfica a partir de fonte biológica, e empíricas, decorrentes do desenho experimental adotado na Fase 1.
+
+9.1 Limitações estruturais
+
+Gêmeos monozigóticos. A derivação da CKU pressupõe a unicidade do perfil genético — pressuposto violado para gêmeos monozigóticos, que compartilham o mesmo genoma em todos os loci cobertos pelo painel. Dois irmãos MZ gerariam, portanto, chaves idênticas quando submetidos ao mesmo procedimento de tipagem e ao mesmo salt. Trata-se de limitação insolúvel no nível do desenho atual: nenhum refinamento da função de derivação distingue material genético idêntico. Mitigações possíveis residem na CKU Ampliada — incorporação de marcadores somáticos e epigenéticos (padrões de metilação do DNA, rearranjos de receptores imunológicos, mosaicismos pós-zigóticos), que divergem entre MZ ao longo da vida — registrada como extensão futura (Seção 11). Para as aplicações críticas, a limitação reforça a necessidade do modelo híbrido: o fator secreto adicional distingue titulares mesmo sob identidade genética compartilhada.
+
+Irrevogabilidade do material genético. Senhas comprometidas são substituídas; tokens perdidos, reemitidos; certificados digitais, revogados. O perfil genético não admite nenhuma dessas operações — o titular não pode trocar seu DNA. Comprometida a relação entre perfil e chave (por exemplo, pelo vazamento do material de derivação ou pela imposição coercitiva de fornecimento da amostra), a credencial está comprometida permanentemente. A arquitetura híbrida (Seção 6.5) desloca o ponto crítico de falha para o fator auxiliar, revogável — mitigação parcial, pois o componente genético permanece irrenunciável como elo identitário.
+
+Obtenção direta de amostra biológica. O adversário que obtém amostra do titular (saliva residual em copo, fio de cabelo, material descamado) possui a entrada completa do sistema e a submete ao mesmo pipeline legítimo. Nenhuma quantidade de entropia do painel ou de endurecimento da função de derivação neutraliza esse vetor, pois o ataque contorna a enumeração — não a enfrenta. A consequência prática é a delimitação do modelo de ameaça: a CKU protege contra adversários que conhecem o espaço de perfis (frequências públicas, bases forenses), não contra adversários que possuem a amostra do titular. Vale notar que essa assimetria atenua a limitação em cenário real: a coleta de amostra requer proximidade física e conhecimento prévio do alvo, condição muito mais restritiva que o acesso remoto a bases de dados.
+
+Entropia limitada da fonte (painel didático). Com ~21,5 bits de entropia de genótipo, o painel da Fase 1 situa-se muito aquém dos patamares contemporâneos (128 bits). A expansão para o painel completo (~275 bits projetados, Seção 6.4) atenua drasticamente a limitação, mas a mantém dependente do modelo de ameaça: a entropia quantifica o custo da enumeração, não o sigilo — distinção desenvolvida no Referencial (Seção 4.4) e que atravessa todo o trabalho.
+
+9.2 Limitações empíricas da Fase 1
+
+Simulação populacional. As frequências alélicas do painel didático são plausíveis, não empíricas. A calibração com frequências reais — STRBase, ALFRED, 1000 Genomes — é atividade da Fase 2 e poderá deslocar os valores de entropia em qualquer direção, embora o argumento estrutural (gap frente aos 256 bits) seja insensível a essa troca.
+
+Amplitude da validação estatística. As três baterias aplicadas (12.800 bytes, 400 chaves) foram integralmente aprovadas, mas constituem subconjunto mínimo da suíte do NIST SP 800-22, que compreende 15 subtestes e exige no mínimo 10⁶ bits. A bateria completa permanece como trabalho futuro — a Amostra da Fase 1 foi dimensionada para caracterização do pipeline, não para certificação exaustiva de aleatoriedade.
+
+Medidas pontuais de dissimilaridade. As distâncias de Hamming entre perfis distintos e entre salts distintos (Tabela 7.2) baseiam-se em observação de par único por cenário; a avaliação estatística formal do efeito avalanche empregou n = 60 pares (Seção 7.3). A re-execução sistemática dos cenários de caracterização ampliaria a robustez do reporte.
+
+Ausência da min-entropia. A entropia de Shannon superestima a resistência à enumeração gulosa — ataque que enumera genótipos por ordem decrescente de probabilidade. A min-entropia por locus (−log₂ max pᵢ) constitui limite inferior mais conservador e deverá integrar a análise da Fase 2, conforme registrado nos objetivos.
+
+Hardware de referência. Os benchmarks foram medidos em estação de trabalho deliberadamente modesta (Seção 5.5), o que qualifica os tempos legítimos como limite superior e os custos ao atacante como limite inferior — prerrogativa metodológica consciente, mas que impede a generalização direta dos valores absolutos para ambientes de produção contemporâneos. O multiplicador de ~162.000× entre hash de uso geral e Argon2id, contudo, é propriedade da arquitetura, não do hardware específico.
+
+Contingência operacional. A viabilidade pressupõe tipagem genômica confiável disponível no fluxo de autenticação — condição tecnológica e regulatória (LGPD) fora do escopo experimental deste estudo, examinada na dimensão de aplicações (Seção 8.5).
+
+9.3 Síntese
+
+As limitações estruturais não são defeitos de execução: são propriedades da fonte biológica como material criptográfico, mapeadas com antecedência e convertidas em critérios de desenho (modelo híbrido, delimitação do modelo de ameaça, CKU Ampliada como extensão). As limitações empíricas, por sua vez, delimitam o escopo validado da Fase 1 e definem a agenda da Fase 2. Em conjunto, elas definem o território honesto do trabalho: o que foi demonstrado, o que foi projetado e o que permanece aberto.
+
+10. DISCUSSÃO
+
+Os resultados experimentais da Fase 1, lidos em conjunto, compõem um quadro que exige interpretação em duas camadas: o que a arquitetura demonstrou e o que a fonte impõe. Esta seção articula as duas camadas e posiciona o trabalho frente à literatura de biometria criptográfica.
+
+10.1 O gap de entropia como achado central
+
+O resultado mais importante deste trabalho é também o mais desconfortável: a entropia genética disponível no painel STR estudado — aproximadamente 21,5 bits de genótipo (Seção 7.1) — corresponde a cerca de um sexto do patamar mínimo contemporâneo (128 bits) e a menos de um décimo dos 256 bits exigidos pela chave-alvo (AES-256). Traduzida ao espaço de busca, a diferença é dramática: um adversário enfrenta 2^106 vezes menos candidatos que os pressupostos pelo padrão mínimo, e 2^234 vezes menos que os do AES-256.
+
+Essa lacuna não é defeito metodológico, mas característica intrínseca da fonte: a imprevisibilidade de um genótipo é limitada pelas frequências alélicas populacionais, que são públicas e amplamente documentadas. Um perfil STR identifica um indivíduo com especificidade extraordinária — bilhões para um — mas identificar não é o mesmo que ser imprevisível: a especificidade advém da baixa probabilidade de coincidência entre dois perfis sorteados, enquanto a imprevisibilidade criptográfica exige a alta entropia do segredo face ao adversário. O adversário forense conhece as distribuições, sabe enumerar genótipos por ordem decrescente de probabilidade e dispõe, em cenários plausíveis, de informação genética parcial do alvo (parentes próximos, bancos forense-institucionais).
+
+A distinção entre poder discriminatório e sigilo — posta em primeiro plano na Justificativa (Seção 2) e quantificada no Referencial (Seção 4.4) — constitui, portanto, o achado analítico central do trabalho: a projetada margem de ~275 bits do painel completo mede o custo da enumeração, não o sigilo da fonte, e nenhum refinamento do operador de derivação altera essa natureza.
+
+10.2 O que a função de derivação compra — e o que não compra
+
+O benchmark comparativo (Seção 7.4) permite quantificar com franqueza o papel da Argon2id na arquitetura. Sob funções hash de uso geral, o espaço de ~2^21,5 genótipos é enumerado por completo em ~5 segundos — proteção nula contra busca exaustiva offline. Sob a Argon2id, a mesma enumeração custa ~9,4 dias no hardware de referência, com multiplicador de ~162.000× no tempo por tentativa e consumo de 64 MiB de memória dedicada por candidatura — última característica decisiva, pois neutraliza a vantagem de hardware massivamente paralelo: a RAM dedicada não escala com a generosidade da computação bruta.
+
+A função de derivação, portanto, compra custo: transforma 21,5 bits de entropia em um espaço de busca computacionalmente caro. O que ela não compra é entropia. Nenhuma KDF aumenta a imprevisibilidade da entrada — e a distinção, embora elementar para a criptografia, merece ênfase neste contexto biométrico: formulações que sugerem que "passar o DNA por uma função forte" basta para produzir segurança de 256 bits são empiricamente refutadas pelos próprios resultados deste trabalho — chaves estatisticamente perfeitas (Seção 7.3) a partir de fonte com 21,5 bits. A qualidade estatística da saída não é transferível como segurança da chave, pois o adversário ataca o espaço de entrada, não a saída.
+
+Essa leitura alimenta a recomendação central do trabalho: o componente criptográfico da arquitetura (Argon2id) e o componente de entropia (fonte genética + fator adicional) são eixos independentes, e a segurança do sistema é limitada pelo mais fraco em cada eixo. Otimizar apenas um deles — como fizeram as formulações anteriores do modelo com hashes rápidos sobre painel amplo — deixa o sistema vulnerável no outro.
+
+10.3 Ataques de vizinhança genética
+
+Cenário adversarial específico da fonte genética merece análise própria: parentes de primeiro grau compartilham, em média, metade de seus alelos. Um irmão do titular conhece, por consequência, metade do material de derivação — e poderia tentar enumeração apenas sobre a metade desconhecida, reduzindo substancialmente o espaço de busca.
+
+Os resultados da Bateria 3 (Seção 7.3) fornecem a resposta a essa ameaça: a distância de Hamming média de 49,6% (σ = 9,5, n = 60) entre chaves derivadas de entradas que diferem em um único bit demonstra que meia entrada compartilhada não implica correlação aproveitável na saída — chaves de parentes próximos são tão dissimilares quanto chaves de indivíduos arbitrários. O efeito avalanche quebra estruturalmente a vizinhança genética: o atacante-parente não pode fatorar a busca em torno do que conhece, pois a função de derivação não preserva proximidade de entrada em proximidade de saída.
+
+Essa propriedade precisa, contudo, ser lida com precisão: ela impede o ataque por vizinhança — inteligente, localizado — mas não reduz o espaço de busca total. O irmão atacante ainda pode enumerar os ~2^21,5 genótipos plausíveis, incluindo os seus próprios e combinações de alelos familiares, pagando o custo integral da busca exaustiva. Em outras palavras, o avalanche converte um ataque inteligente em um ataque burro — mas o ataque burro permanece viável pela limitação de entropia da fonte, o que reforça a recomendação de arquitetura híbrida.
+
+10.4 O modelo híbrido como síntese
+
+Os resultados convergem para a arquitetura em camadas formalizada na Seção 6.5: o perfil genético e um fator secreto adicional, sob independência estatística, somam entropias — o painel didático (~21,5 bits) com uma frase-senha de ~40 bits alcança a faixa de ~60 bits; o painel completo (~275 bits) supera com folga o patamar de 128 bits mesmo com fator modesto.
+
+A síntese das seções anteriores atribui a cada componente seu papel exato: o fator genético aporta o que a senha não tem (vinculação inseparável ao titular, resistência a phishing, impossibilidade de esquecimento); o fator secreto aporta o que o DNA não tem (entropia complementar, revogabilidade); e a Argon2id aporta o que nenhum dos dois tem (custo proibitivo à enumeração de qualquer combinação parcial de conhecimento). Três eixos, três propriedades distintas — e a segurança do conjunto é produto da composição, não de qualquer elemento isolado.
+
+10.5 Posicionamento frente à biometria criptográfica clássica
+
+O pipeline proposto difere das abordagens clássicas em um aspecto estrutural: ele não enfrenta o problema da variação intra-classe. O Fuzzy Vault (JUELS; SUDAN, 2006) e os fuzzy extractors (DODIS et al., 2008) foram concebidos para biometrias ruidosas — impressões digitais e íris cujas leituras sucessivas diferem, exigindo mecanismos de correção de erro capazes de recuperar a mesma chave a partir de amostras imperfeitas. O dado STR é, nesse contexto, excepcionalmente bem-comportado: a tipagem laboratorial de um mesmo indivíduo reproduz o genótipo com exatidão determinística (trata-se de leitura de genótipo, não de fenótipo variável), o que eliminou do pipeline toda a maquinaria de tolerância — e, com ela, vetores de ataque típicos desses mecanismos, como a análise dos pontos chaff de um vault ou a exploração da informação auxiliar pública dos fuzzy extractors, que pode vazar parcialmente o segredo biométrico.
+
+Frente ao BioHashing (TEOH et al., 2004), a distinção é de papel, não de mecanismo: o BioHashing projeta a biometria sobre domínio pseudo-aleatório parametrizado por token secreto, perseguindo revocabilidade; o presente trabalho adota caminho conceitualmente mais simples — a separação entre fonte de identidade (perfil) e fator secreto (modelo híbrido) — alcançando análogo pragmático de revocabilidade sem o domínio projetado, ao custo reconhecido de exigir do titular a guarda de um fator adicional.
+
+Nenhuma dessas famílias de técnicas, note-se, resolve o problema central quantificado neste trabalho: a entropia limitada da fonte biométrica. Elas o administram de maneiras distintas, cada qual com seu custo — e o presente estudo contribui precisamente ao quantificar, com validação experimental, qual é o custo de cada escolha arquitetural.
+
+10.6 Síntese da discussão
+
+O conjunto interpreta-se assim: a Fase 1 demonstrou que o pipeline é tecnicamente viável — determinístico, estatisticamente sólido, computacionalmente adequado e com custo de enumeração elevado por construção. Demonstrou igualmente que a viabilidade técnica não se traduz automaticamente em segurança: a fonte genética impõe tetos que nenhum refinamento do operador remove. A resposta arquitetural a essa tensão — o modelo híbrido — não é concessão de fraqueza, mas desenho de engenharia consciente: cada componente contribui com a propriedade que os demais não podem fornecer. Nesse sentido, o trabalho cumpre os objetivos de desenvolver o modelo, validá-lo experimentalmente e, com igual rigor, delimitar honestamente o que ele pode prometer.
+
+
+11. CONCLUSÃO
+
+Este trabalho investigou a viabilidade de gerar uma Chave Criptográfica Única (CKU) derivada de marcadores genéticos individuais, mediante um pipeline determinístico e integralmente reprodutível que une genética forense e criptografia aplicada, sob a formalização CKU = Argon2id(S‖s). A resposta obtida tem duas faces, ambas sustentadas por evidência experimental.
+
+No plano técnico, a viabilidade foi demonstrada. O pipeline — canonização unívoca do genótipo, derivação via Argon2id com parâmetros calibrados (t = 3, m = 64 MiB, p = 1) — produziu chaves estatisticamente indistinguíveis de material aleatório genuíno nas três baterias de validação aplicadas: uniformidade de distribuição de bytes (χ²(255) = 247,88; p = 0,614), equilíbrio posicional de bits (proporção global de 0,5017; 2 de 256 posições fora do intervalo de 99%, contra ~2,6 esperadas por acaso) e efeito avalanche (49,6% de bits alterados; σ = 9,5; n = 60). A propriedade determinística foi verificada por suíte de testes automatizada, incluindo a invariância à ordem de entrada de loci e alelos. O custo computacional de 247 ms por derivação em hardware deliberadamente modesto situa o método em regime compatível com operações interativas, enquanto o benchmark comparativo demonstrou o preço da arquitetura ao atacante: um multiplicador de ~162.000× sobre funções hash de uso geral, elevando a enumeração do espaço de genótipos de ~5 segundos para a ordem de nove dias de computação contínua.
+
+No plano da segurança, contudo, a conclusão exige franqueza. A entropia genética do painel estudado (~21,5 bits de genótipo) situa-se muito aquém dos patamares contemporâneos, e a qualidade estatística da saída não modifica esse quadro, pois o adversário ataca o espaço de entrada, não a saída. O poder discriminatório de um painel genético — mesmo o painel completo projetado, com ~275 bits — quantifica o custo da enumeração, não o sigilo da fonte, e nenhum refinamento do operador de derivação altera essa natureza. Recomenda-se, portanto, para aplicações críticas, o modelo híbrido que combina o perfil genético a um fator secreto adicional, somando entropias independentes e deslocando o ponto crítico de falha para o componente revogável, ao custo reconhecido de exigir do titular a guarda de um fator adicional.
+
+Como extensões futuras, apontam-se quatro direções. Primeira, a expansão do painel para o conjunto completo de marcadores (20 STRs + 130 SNPs + 15 INDELs), com frequências alélicas empíricas de bases públicas de população, elevando a entropia da fonte para a casa dos 275 bits. Segunda, o reporte da min-entropia por locus, medida conservadora mais adequada à análise de enumeração gulosa. Terceira, a execução da bateria completa do NIST SP 800-22 (15 subtestes, mínimo de 10⁶ bits). Quarta, a investigação da CKU Ampliada com marcadores somáticos e epigenéticos, direcionada à discriminação de gêmeos monozigóticos — a fronteira residual da unicidade genética como pressuposto criptográfico.
+
+O trabalho contribui, assim, metodologicamente para a interseção entre a biomedicina forense e a criptografia aplicada, estabelecendo tanto o que a abordagem oferece — um pipeline reprodutível, determinístico e estatisticamente validado, executável em hardware acessível — quanto, com igual rigor, aquilo que ela não pode prometer. Nesse equilíbrio entre demonstração e delimitação reside, entende-se, a condição de maturidade científica da proposta: não afirmar mais do que os dados sustentam, nem menos do que os dados comprovam.
+
 
