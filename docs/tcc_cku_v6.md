@@ -437,4 +437,173 @@ Como extensões futuras, apontam-se quatro direções. Primeira, a expansão do 
 
 O trabalho contribui, assim, metodologicamente para a interseção entre a biomedicina forense e a criptografia aplicada, estabelecendo tanto o que a abordagem oferece — um pipeline reprodutível, determinístico e estatisticamente validado, executável em hardware acessível — quanto, com igual rigor, aquilo que ela não pode prometer. Nesse equilíbrio entre demonstração e delimitação reside, entende-se, a condição de maturidade científica da proposta: não afirmar mais do que os dados sustentam, nem menos do que os dados comprovam.
 
+REFERÊNCIAS
+
+Sobre a ordem: ABNT NBR 6023 ordena por autor (alfabética). A lista abaixo já está nessa ordem — cole como está e remova eventuais duplicatas com o v5 se houver sobreposição.
+
+BIRYUKOV, A.; DINU, D.; KHOVRATOVICH, D. Argon2: the memory-hard function for password hashing and other applications. Luxembourg: University of Luxembourg, 2017. (White paper, Password Hashing Competition).
+
+BRASIL. Lei nº 13.709, de 14 de agosto de 2018. Lei Geral de Proteção de Dados Pessoais (LGPD). Diário Oficial da União: seção 1, Brasília, DF, 15 ago. 2018.
+
+BUTLER, J. M. Advanced topics in forensic DNA typing: interpretation. San Diego: Academic Press, 2015.
+
+DODIS, Y.; OSTROVSKY, R.; REYZIN, L.; SMITH, A. Fuzzy extractors: how to generate strong keys from biometrics and other noisy data. SIAM Journal on Computing, v. 38, n. 1, p. 97–139, 2008.
+
+HILLIS, D. M. et al. Princípios de genética. Porto Alegre: Artmed, 2021.
+
+JAIN, A. K.; FLYNN, P.; ROSS, A. A. (org.). Handbook of biometrics. New York: Springer, 2011.
+
+JEFFREYS, A. J.; WILSON, V.; THEIN, S. L. Individual-specific "fingerprints" of human DNA. Nature, v. 316, p. 76–79, 1985.
+
+JUELS, A.; SUDAN, M. A fuzzy vault scheme. Designs, Codes and Cryptography, v. 38, n. 2, p. 237–257, 2006.
+
+NIST. SP 800-22 Rev. 1a: A statistical test suite for random and pseudorandom number generators for cryptographic applications. Gaithersburg: National Institute of Standards and Technology, 2010.
+
+NIST. FIPS 180-4: Secure Hash Standard (SHS). Gaithersburg: National Institute of Standards and Technology, 2015a.
+
+NIST. FIPS 202: SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions. Gaithersburg: National Institute of Standards and Technology, 2015b.
+
+O'CONNOR, J.; AUMASSON, J.-P.; NEVES, S.; WILCOX-O'HEARN, Z. BLAKE3: one cryptographic hash to replace them all. 2020. Disponível em: https://github.com/BLAKE3-team/BLAKE3-specs/blob/master/blake3.pdf. Acesso em: [inserir data].
+
+PROMEGA CORPORATION. PowerPlex® Fusion 6C System: technical manual. Madison: Promega, 2023.
+
+STALLINGS, W. Cryptography and network security: principles and practice. 8. ed. Harlow: Pearson, 2021.
+
+TEOH, A. B. J.; GOH, A.; NGO, D. C. L. Random multispace quantization as an analytic mechanism for biohashing of biometric and random identity inputs. IEEE Transactions on Pattern Analysis and Machine Intelligence, v. 26, n. 12, p. 1892–1901, 2004.
+
+APÊNDICE A — PROTÓTIPO COMPUTACIONAL (CÓDIGO-FONTE CORRIGIDO)
+
+Introdução de apêndice antes do código:
+
+    Apresenta-se a seguir o código-fonte do protótipo computacional do modelo CKU, na versão corrigida para os fins deste trabalho. O protótipo original, escrito para a formulação com funções hash de uso geral, serviu de banco de provas conceitual das versões anteriores do modelo (fase pré-Argon2id). As correções aplicadas foram três: importação do módulo random (ausente, causando erro de nomeação na primeira execução), validação explícita da função hash recebida pelo construtor (eliminando a aceitação silenciosa de valores inválidos) e recuo dos comandos de saída para o bloco de guarda if __name__ (impedindo execução em importação do módulo).
+
+#!/usr/bin/env python3
+"""
+Protótipo do modelo CKU (Chave Criptográfica Única).
+Versão histórica: formulação com funções hash de uso geral.
+A arquitetura de produção do trabalho emprega Argon2id (ver Apêndice A.2).
+
+Correções aplicadas sobre a versão anterior:
+  1. import random adicionado (NameError na primeira execução);
+  2. validação explícita de funções hash no construtor;
+  3. comandos de saída recolhidos ao bloco de guarda.
+"""
+import hashlib
+import random          # Correção 1: import ausente na versão original
+import secrets
+import statistics
+import time
+from typing import Any, Dict, List, Tuple
+
+FUNCOES_VALIDAS = ('SHA-256', 'SHA-3', 'BLAKE3')   # Correção 2
+
+
+def perfil_canonico(perfil: Dict[str, Tuple[str, str]]) -> bytes:
+    """Serializa o perfil em representação canônica determinística."""
+    partes = []
+    for locus in sorted(perfil.keys()):
+        alelos = sorted(perfil[locus],
+                        key=lambda a: float(a) if a.replace('.', '', 1)
+                        .isdigit() else float('inf'))
+        partes.append(f"{locus}:{alelos[0]}:{alelos[1]}")
+    return '|'.join(partes).encode('utf-8')
+
+
+class GeradorCKU:
+    """Gera CKUs a partir de perfis genéticos e salts."""
+
+    def __init__(self, funcao_hash: str = 'SHA-256') -> None:
+        self.funcao_hash = funcao_hash.upper()
+        if self.funcao_hash not in FUNCOES_VALIDAS:
+            raise ValueError(f'Função hash desconhecida: {funcao_hash}')
+        if self.funcao_hash == 'BLAKE3':
+            import blake3
+            self._blake3 = blake3
+
+    def derivar(self, perfil: Dict[str, Tuple[str, str]],
+                salt: bytes) -> bytes:
+        """Deriva a CKU de 256 bits: CKU = H(perfil_canônico || salt)."""
+        material = perfil_canonico(perfil) + salt
+        if self.funcao_hash == 'SHA-256':
+            return hashlib.sha256(material).digest()
+        if self.funcao_hash == 'SHA-3':
+            return hashlib.sha3_256(material).digest()
+        return self._blake3.blake3(material).digest()
+
+
+def gerar_genotipo_simulado(id_individuo: int,
+                            painel: Dict[str, List[str]]
+                            ) -> Dict[str, Tuple[str, str]]:
+    """Gera genótipo sintético com RNG determinístico por indivíduo."""
+    rng = random.Random(id_individuo)
+    return {locus: tuple(sorted(rng.sample(alelos, 2)))
+            for locus, alelos in painel.items()}
+
+
+def main() -> None:
+    painel = {
+        'D18S51': ['12', '13', '14', '15', '16', '17'],
+        'D21S11': ['28', '29', '30', '31', '31.2', '32'],
+        'D3S1358': ['14', '15', '16', '17', '18'],
+        'D5S818': ['10', '11', '12', '13'],
+        'TH01': ['6', '7', '8', '9', '9.3'],
+    }
+    gerador = GeradorCKU('SHA-256')
+    tempos: List[float] = []
+
+    for i in range(100):
+        perfil = gerar_genotipo_simulado(i, painel)
+        salt = secrets.token_bytes(16)
+        t0 = time.perf_counter()
+        chave = gerador.derivar(perfil, salt)
+        tempos.append(time.perf_counter() - t0)
+        assert len(chave) == 32
+
+    print(f'Chaves geradas: 100')
+    print(f'Tempo médio por hash: {statistics.fmean(tempos)*1e6:.1f} µs')
+    print(f'Amplitude: {(max(tempos)-min(tempos))*1e6:.1f} µs')
+    print('PROCESSAMENTO COMPLETO')
+
+
+if __name__ == '__main__':
+    main()          # Correção 3: execução sob guarda
+
+    Nota histórica: este protótipo integra a função de derivação com geração de perfis e cronometragem. O benchmark comparativo definitivo entre este modelo e a arquitetura Argon2id — que motivou a substituição formalizada na Seção 6 — encontra-se em scripts/benchmark_hashes.py e nos resultados reportados na Seção 7.4.
+
+APÊNDICE B — DIAGRAMA DO PIPELINE (MERMAID)
+
+Introdução:
+
+    O diagrama abaixo representa o fluxo do pipeline de derivação da CKU na arquitetura consolidada deste trabalho, conforme implementado e validado experimentalmente (Fases 1 e 2).
+
+flowchart LR
+    A[Amostra de DNA] --> B[Extração e tipagem<br/>STRs · SNPs · INDELs]
+    B --> C[Seleção de marcadores<br/>20 STR + 130 SNP + 15 INDEL]
+    C --> D[Codificação binária canônica<br/>6+6 bits / 2 bits / 1 bit]
+    D --> E[Sequência S<br/>515 bits]
+    E --> F[Adição de salt<br/>S′ = S ‖ s]
+    F --> G[Derivação Argon2id<br/>t=3 · m=64 MiB · p=1]
+    G --> H[CKU<br/>256 bits · 64 hex]
+
+(Renderiza direto no preview do VS Code com a extensão Mermaid que você já tem; na exportação pandoc, o gráfico Mermaid se converte para imagem automaticamente se instalado o filtro — ver abaixo.)
+
+E uma versão conceitual da arquitetura híbrida — vale como Figura de fechamento (pode entrar na Seção 6.5 ou aqui como diagrama complementar):
+flowchart LR
+    P[Perfil genético<br/>irrevogável · vinculante] --> D[Argon2id<br/>S ‖ s ‖ f]
+    F[Fator secreto f<br/>revogável · portador de entropia] --> D
+    S[Salt s<br/>CSPRNG · único por derivação] --> D
+    D --> K[CKU híbrida<br/>256 bits]
+APÊNDICE C — COMANDOS DE REPRODUÇÃO
+
+Pequeno e valioso — ensina a reproduzir tudo 
+
+    A reprodução integral dos resultados requer apenas Python 3.12 e o ambiente declarado:
+    git clone https://github.com/botelhojrv-dev/tcc-genetica-cripto
+    cd tcc-genetica-cripto
+    python3 -m venv .venv && source .venv/bin/activate
+    pip install -r requirements.txt
+    make test                    # suíte: 18 casos (inclui determinismo)
+    python scripts/benchmark_hashes.py   # Tabela 7.3
+
+
 
