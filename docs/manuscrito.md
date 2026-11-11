@@ -33,7 +33,7 @@ alto grau de imprevisibilidade ,  no mínimo 128 bits para os padrões
 contemporâneos (AES-128), com 256 bits recomendados (AES-256). A união
 dessas duas frentes, contudo, esbarra num obstáculo fundamental: dados
 biométricos não são segredos. Ao contrário de uma senha, a característica
-biométrica está permanentemente "exposta ao mundo" — pode ser coletada
+biométrica está permanentemente "exposta ao mundo" , pode ser coletada
 sem consentimento (uma digital em um copo, DNA em saliva residual) e não
 pode ser trocada caso comprometida. Essa assimetria fez surgir um campo
 próprio de pesquisa, a biometria criptográfica, com propostas originais 
@@ -125,10 +125,10 @@ de identificação humana utilizados em genética forense. A geração
 aleatória foi ancorada em semente fixa (seed=2024), garantindo que todos
 os experimentos sejam replicados de forma idêntica.
 
-A opção por dados sintéticos atende a dois requisitos: ético — a Lei Geral
+A opção por dados sintéticos atende a dois requisitos: ético , a Lei Geral
 de Proteção de Dados (BRASIL, 2018) classifica dados genéticos como dados
 pessoais sensíveis (Art. 5º, inciso II), impondo restrições ao uso de
-perfis reais — e metodológico, ao eliminar variabilidade de coleta e
+perfis reais , e metodológico, ao eliminar variabilidade de coleta e
 permitir controle total dos parâmetros populacionais.
 
 ### 2.3 Quantificação de entropia
@@ -201,7 +201,7 @@ se média e desvio-padrão. Os experimentos foram conduzidos em estação de
 trabalho convencional (AMD FX-8370E, 8 núcleos, arquitetura Piledriver,
 3,3 GHz; 8 GiB de RAM; armazenamento SSD SATA; sistema operacional GNU/
 Linux Mint 22.3, kernel 6.14; Python 3.12), deliberadamente representativa
-de hardware de baixo custo, datável de meados da década de 2010 — premissa
+de hardware de baixo custo, datável de meados da década de 2010 , premissa
 metodológica conservadora: custos medidos em hardware modesto constituem
 limite inferior do custo imposto a eventuais atacantes.
 Sob essa premissa, os tempos reportados configuram limite superior da latência legítima do método, ao passo que o custo computacional imposto a potenciais atacantes deve ser interpretado como limite inferior, dado que infraestruturas contemporâneas reduziriam ambos.
@@ -225,7 +225,7 @@ Perfil (soma)	—	10,75	11,27	0,954
 
 Fonte: dados do notebook 01, elaborado pelo autor.
 
-A Figura 1 ilustra o comportamento dos cinco loci. Os quatro loci de cinco alelos operaram com eficiência superior a 96%, refletindo frequências alélicas relativamente equilibradas no painel simulado. O locus D5S818 apresentou a menor eficiência (88,1%), consequência da dominância dos alelos 11 e 12, que juntos concentram 74% da frequência paramétrica — característica que o torna o candidato natural à exclusão em eventuais versões otimizadas do painel.
+A Figura 1 ilustra o comportamento dos cinco loci. Os quatro loci de cinco alelos operaram com eficiência superior a 96%, refletindo frequências alélicas relativamente equilibradas no painel simulado. O locus D5S818 apresentou a menor eficiência (88,1%), consequência da dominância dos alelos 11 e 12, que juntos concentram 74% da frequência paramétrica , característica que o torna o candidato natural à exclusão em eventuais versões otimizadas do painel.
 
 A entropia alélica agregada do painel é de 10,75 bits por conjunto haploide. Sob o modelo diplóide de Hardy-Weinberg, com loci independentes, a entropia do genótipo completo aproxima-se de 21,5 bits , valor coerente com a estimativa teórica de ~22 bits que fundamenta a discussão de segurança deste trabalho (Seção 4). Convém distinguir, contudo, duas medidas distintas: a entropia do perfil como segredo (imprevisibilidade do genótipo face à população, ~21,5 bits) e a entropia interna média dos símbolos de cada perfil individual (2,95 bits, observada no painel B da Figura 1), que quantifica a diversidade alélica dentro do indivíduo e não guarda relação com a resistência criptográfica da fonte.
 
@@ -258,14 +258,14 @@ Fonte: dados dos notebooks 02 e da suíte de testes (tests/test_determinismo.py,
 
 Os dois primeiros cenários demonstram comportamento preliminar de avalanche: alterações na entrada , no genótipo ou no salt , propagam-se para cerca de metade dos bits de saída. Cabe registrar que essas medidas do notebook 02 são observações pontuais (um par por cenário, para caracterização qualitativa do operador), enquanto a avaliação estatística formal do efeito avalanche , 60 pares, com média e desvio-padrão , é reportada na Seção 3.3. O terceiro cenário confirma a propriedade determinística: derivações repetidas da mesma entrada canônica e mesmo salt convergem para chaves bit a bit idênticas, verificada por suíte dedicada que inclui dez execuções consecutivas e a invariância à ordem de inserção de loci e alelos , propriedade garantida pela canonização descrita na Seção 2.4.
 
-Em conjunto, as três medidas caracterizam o operador de derivação de forma completa: ele separa maximamente entradas distintas, preserva exatamente entradas idênticas e impõe custo computacional substancial a cada chamada — as propriedades conjuntas exigidas de um pipeline reprodutível apto à derivação de chaves.
+Em conjunto, as três medidas caracterizam o operador de derivação de forma completa: ele separa maximamente entradas distintas, preserva exatamente entradas idênticas e impõe custo computacional substancial a cada chamada , as propriedades conjuntas exigidas de um pipeline reprodutível apto à derivação de chaves.
 
 ### 3.3 Validação Estatística das Chaves
 Para avaliar se as chaves derivadas atendem aos critérios estatísticos de material criptográfico legítimo, foram geradas 400 chaves independentes (variando-se perfil e salt), compondo 12.800 bytes agregados, submetidos às três baterias de testes especificadas na Seção 2.5, sob nível de significância α = 0,05, conforme recomendação do NIST SP 800-22. A Figura 2 sintetiza os resultados.
 
 Bateria 1 — Uniformidade de distribuição de bytes. O teste qui-quadrado de aderência sobre os 12.800 bytes agregados (frequência esperada de 50 ocorrências por valor, 255 graus de liberdade) resultou em χ²(255) = 247,88, p = 0,614. A hipótese nula de distribuição uniforme não foi rejeitada: o valor de p situa-se muito acima do limiar de significância, indicando que a frequência observada dos 256 valores de byte (faixa de 32 a 71 ocorrências) não desvia da expectativa uniforme de forma estatisticamente detectável. O estatístico ligeiramente inferior aos graus de liberdade (247,88 < 255) denota dispersão marginalmente menor que a esperada sob aleatoriedade perfeita ,  comportamento plenamente compatível com flutuação amostral, não indício de estrutura nos dados.
 
-Bateria 2 — Equilíbrio posicional de bits. A proporção global de bits 1 nos 102.400 bits agregados foi de 0,5017 — dentro do intervalo de confiança de 99% sob hipótese binomial (p = 0,5). Na avaliação posicional, com intervalos individuais de 99% para cada uma das 256 posições de bit (0,436 – 0,564 para n = 400 observações por posição), verificou-se que 2 posições situaram-se fora do intervalo , resultado consistente com a expectativa estatística de ~2,6 posições fora do intervalo por puro acaso. A bateria foi, portanto, aprovada, sem indício de viés posicional detectável por um adversário.
+Bateria 2 — Equilíbrio posicional de bits. A proporção global de bits 1 nos 102.400 bits agregados foi de 0,5017 ,  dentro do intervalo de confiança de 99% sob hipótese binomial (p = 0,5). Na avaliação posicional, com intervalos individuais de 99% para cada uma das 256 posições de bit (0,436 – 0,564 para n = 400 observações por posição), verificou-se que 2 posições situaram-se fora do intervalo , resultado consistente com a expectativa estatística de ~2,6 posições fora do intervalo por puro acaso. A bateria foi, portanto, aprovada, sem indício de viés posicional detectável por um adversário.
 
 Bateria 3 — Efeito avalanche. As distâncias de Hamming entre chaves derivadas de pares de entrada diferindo em um único bit (inversão do bit menos significativo da representação canônica, mesmo salt) foram medidas em n = 60 pares, resultando em média de 127,1 bits alterados de 256 (49,6%), σ = 9,5 bits, faixa observada de 101 a 146. A média situa-se dentro do critério de aprovação centrado em 50% (128/256 ± tolerância), e o desvio-padrão observado é compatível com o valor teórico sob difusão ideal (σ ≈ 8 bits), conferindo estabilidade à medida. Esses resultados quantificam estatisticamente o comportamento preliminarmente caracterizado na Tabela 4 (Seção 3.2), fechando o ciclo entre observação pontual e validação amostral.
 
@@ -351,4 +351,4 @@ meu porto seguro agora,
 obrigado, gatinho. 
 
 
-→ (a definir — iniciação científica? instituição?)
+→ (a definir ,  iniciação científica? instituição?)
