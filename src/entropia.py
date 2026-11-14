@@ -38,8 +38,21 @@ def entropia_shannon(valores: Iterable) -> float:
         (n / total) * math.log2(n / total) for n in contagem.values()
     )
 
-
-def entropia_minima(amostras: int) -> float:
+def entropia_maxima(amostras: int) -> float:
     """Entropia máxima possível para 'amostras' símbolos distintos."""
     return math.log2(amostras) if amostras > 1 else 0.0
-    
+
+
+def entropia_minima(valores: Iterable) -> float:
+    """
+    Min-entropia H∞ = -log2(p_max), em bits.
+
+    Mede a previsibilidade do evento MAIS provável — o critério
+    correto para bornear ataques de adivinhação/enumeração guiada.
+    """
+    contagem = Counter(valores)
+    if not contagem:
+        raise ValueError("Coleção vazia não possui entropia definida.")
+    total = sum(contagem.values())
+    p_max = max(n / total for n in contagem.values())
+    return -math.log2(p_max)
