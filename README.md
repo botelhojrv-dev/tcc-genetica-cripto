@@ -8,27 +8,31 @@ e tese doutoral. Investiga a viabilidade de derivar material criptográfico
 
 | Componente | Status | Detalhes |
 |---|---|---|
-| Notebook 01 — Entropia dos STRs | ✅ Concluído | ~22 bits/genótipo (5 loci) |
-| Notebook 02 — Derivação Argon2id | ✅ Concluído | 247 ms/chave, 64 MiB |
+| Notebook 01 — Entropia dos STRs | ✅ Concluído | Três medidas: 21,5 (fase) · **17,74 canônica (valor de segurança)** · 13,61 min-entropia |
+| Notebook 02 — Derivação Argon2id | ✅ Concluído | 237,5 ms/chave (σ = 13,0 ms), 64 MiB |
 | Notebook 03 — Validação estatística | ✅ Concluído | 3 baterias aprovadas |
-| `src/entropia.py` | ✅ Testado | 4/4 testes |
+| `src/entropia.py` | ✅ Testado | 10/10 testes (Shannon + hierarquia H∞ ≤ H ≤ Hmáx) |
 | `src/derivacao.py` | ✅ Testado | 11/11 testes |
-| Suíte completa | 🟢 **15/15** | ~3 s |
+| `tests/test_determinismo.py` | ✅ Testado | 4/4 testes (determinismo condicional + canonização) |
+| Suíte completa | 🟢 **25/25** | ~7 s |
+| Manuscrito v7 (artigo + TCC) | ✅ | `docs/manuscrito.md`, `docs/artigo cku revisao 2 v7.md`, `docs/tcc_ckuv7 revisão.md` |
 | Fluxograma da metodologia | ✅ | `docs/fluxograma.md` (Mermaid) |
 | Discussão do gap de entropia | ✅ | `docs/discussao_gap_entropia.md` |
 | Resumo executivo | ✅ | `docs/resumo_executivo.md` |
 
 ## Resultados principais
 
-1. **Entropia da fonte**: 10,75 bits/alelo; ~22 bits por perfil diplóide
-   (5 loci) — ver [`notebooks/01_exploracao.ipynb`]
+1. **Entropia da fonte** (três medidas, v7): 10,75 bits/alelo; **17,74 bits**
+   por perfil diplóide no espaço canônico (valor de segurança adotado),
+   21,54 bits na convenção de par ordenado (superestimada) e 13,61 bits
+   de min-entropia (pior caso) — ver [`notebooks/01_exploracao.ipynb`]
 2. **Derivação**: Argon2id (t=3, m=64 MiB, p=1) → chave de 32 bytes
-   AES-256-ready, média de 247 ms em hardware modesto
+   AES-256-ready, média de 237,5 ms (σ = 13,0 ms) em hardware modesto
 3. **Validação estatística** (400 chaves, 12.800 bytes):
    - Uniformidade de bytes: χ²(255) = 247,88; p = 0,614 ✓
    - Equilíbrio de bits: 0,5017 global; 2/256 posições fora do IC 99% ✓
-   - Avalanche effect: 49,6% (127,1/256 bits; n = 60 pares) ✓
-   - Hamming entre perfis distintos: 119/256 bits; entre salts: 130/256 ✓
+   - Avalanche effect: 49,6% (127,1/256 bits; σ = 9,5; n = 60 pares) ✓
+   - Hamming entre perfis distintos: 112/256 bits; entre salts: 134/256 ✓
 
 Figuras do artigo em `results/figures/`:
 - `01_entropia_str.png` — entropia por locus + histograma por perfil
@@ -42,8 +46,10 @@ Nenhuma sequência real deve ser enviada a repositório remoto —
 todos os resultados foram obtidos com **perfis sintéticos** gerados
 reproduzivelmente (semente fixa seed=2024).
 
-**Limitação de segurança reconhecida**: ~22 bits de entropia genética não
-suficientes para >128 bits de segurança sem fator secreto adicional.
+**Limitação de segurança reconhecida**: 17,74 bits de entropia genética
+(canônica; pior caso min-entropia 13,61) não são suficientes para os
+128 bits de segurança contemporâneos sem fator secreto adicional
+(modelo híbrido, ~58 bits).
 Ver `docs/discussao_gap_entropia.md` para a análise completa.
 
 ## Estrutura do projeto
@@ -68,7 +74,7 @@ docs/             -> documentação, fluxograma, discussões
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-make test      # 15/15 verdes
+make test      # 25/25 verdes
 make notebook  # JupyterLab em http://localhost:8888
 ```
 
